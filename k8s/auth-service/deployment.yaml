@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: auth-service
+  namespace: ai-platform
+  labels:
+    app: auth-service
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: auth-service
+
+  template:
+    metadata:
+      labels:
+        app: auth-service
+
+    spec:
+      containers:
+        - name: auth-service
+          image: ai-platform-auth:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8001
+
+          env:
+            # Secret
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ai-platform-secret
+                  key: AUTH_DATABASE_URL
+
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-platform-secret
+                  key: JWT_SECRET_KEY
+
+            # ConfigMap
+            - name: JWT_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: JWT_ALGORITHM
+
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

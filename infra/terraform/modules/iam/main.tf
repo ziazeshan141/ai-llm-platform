@@ -1,0 +1,158 @@
+# ---------------------------------------------------------
+# EKS Cluster IAM Role
+# ---------------------------------------------------------
+
+data "aws_iam_policy_document" "eks_cluster_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole"
+    ]
+  }
+}
+
+resource "aws_iam_role" "eks_cluster" {
+  name = "${var.project_name}-${var.environment}-eks-cluster-role"
+
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume_role.json
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-eks-cluster-role"
+  }
+}
+
+
+# ---------------------------------------------------------
+# EKS Cluster IAM Policy
+# ---------------------------------------------------------
+
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  role = aws_iam_role.eks_cluster.name
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+
+# ---------------------------------------------------------
+# EKS Managed Node Group IAM Role
+# ---------------------------------------------------------
+
+data "aws_iam_policy_document" "eks_node_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole"
+    ]
+  }
+}
+
+resource "aws_iam_role" "eks_node" {
+  name = "${var.project_name}-${var.environment}-eks-node-role"
+
+  assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role.json
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-eks-node-role"
+  }
+}
+
+
+# ---------------------------------------------------------
+# EKS Worker Node Policy
+# ---------------------------------------------------------
+
+resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
+  role = aws_iam_role.eks_node.name
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+
+# ---------------------------------------------------------
+# EKS Container Registry Read-Only
+#
+# Allows worker nodes to pull application images from ECR.
+# ---------------------------------------------------------
+
+resource "aws_iam_role_policy_attachment" "eks_ecr_read_only" {
+  role = aws_iam_role.eks_node.name
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+}
+
+
+# ---------------------------------------------------------
+# EKS CNI Policy
+#
+# Required for VPC networking when using the node IAM role
+# for the VPC CNI. Later we can move this permission to the
+# aws-node service account using EKS Pod Identity/IRSA.
+# ---------------------------------------------------------
+
+resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
+  role = aws_iam_role.eks_node.name
+
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+# ---------------------------------------------------------
+# External Secrets Operator - Pod Identity IAM Role
+# ---------------------------------------------------------
+
+data "aws_iam_policy_document" "external_secrets_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession"
+    ]
+  }
+}
+
+
+resource "aws_iam_role" "external_secrets" {
+  name = "${var.project_name}-${var.environment}-external-secrets-role"
+
+  assume_role_policy = data.aws_iam_policy_document.external_secrets_assume_role.json
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-external-secrets-role"
+  }
+}
+
+
+# ---------------------------------------------------------
+# External Secrets - Secrets Manager Read Policy
+# ---------------------------------------------------------
+
+data "aws_iam_policy_document" "external_secrets" {
+  statement {
+    sid    = "ReadApplicationSecrets"
+    effect = "Allow"
+
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret"
+    ]
+
+    resources = var.secrets_manager_secret_arns
+  }
+}

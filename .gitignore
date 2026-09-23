@@ -1,0 +1,146 @@
+# =========================================================
+# Environment / Secrets
+# =========================================================
+
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+
+secrets.yaml
+secret.yaml
+*-secret.yaml
+
+# =========================================================
+# Terraform
+# =========================================================
+
+# Terraform downloaded providers/modules
+**/.terraform/*
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+
+# Saved Terraform plans
+*.tfplan
+
+# Backend environment configuration
+backend-*.hcl
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Terraform override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+# IMPORTANT:
+# .terraform.lock.hcl is intentionally NOT ignored.
+# Commit it to Git.
+
+# =========================================================
+# Python
+# =========================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.coverage
+coverage.xml
+htmlcov/
+
+
+# =========================================================
+# Node / React
+# =========================================================
+
+node_modules/
+dist/
+build/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.npm/
+.yarn/
+
+
+# =========================================================
+# IDE / Editor
+# =========================================================
+
+.vscode/
+.idea/
+
+*.swp
+*.swo
+*~
+
+
+# =========================================================
+# Operating System
+# =========================================================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# =========================================================
+# Logs
+# =========================================================
+
+*.log
+logs/
+
+
+# =========================================================
+# Docker
+# =========================================================
+
+docker-compose.override.yml
+
+
+# =========================================================
+# Kubernetes Local / Sensitive Files
+# =========================================================
+
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+
+kubernetes/secret.yaml
+kubernetes/*-secret.yaml
+
+
+# =========================================================
+# Temporary Files
+# =========================================================
+
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup

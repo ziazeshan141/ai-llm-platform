@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: postgres-init
+  namespace: ai-platform
+  labels:
+    app: postgres
+
+data:
+  01-create-databases.sql: |
+    SELECT 'CREATE DATABASE auth_db'
+    WHERE NOT EXISTS (
+      SELECT FROM pg_database
+      WHERE datname = 'auth_db'
+    )\gexec
+
+    SELECT 'CREATE DATABASE rag_db'
+    WHERE NOT EXISTS (
+      SELECT FROM pg_database
+      WHERE datname = 'rag_db'
+    )\gexec
+
+  02-enable-pgvector.sql: |
+    \connect rag_db
+
+    CREATE EXTENSION IF NOT EXISTS vector;

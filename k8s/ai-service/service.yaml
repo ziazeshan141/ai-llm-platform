@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: ai-service
+  namespace: ai-platform
+  labels:
+    app: ai-service
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: ai-service
+
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8002
+      protocol: TCP

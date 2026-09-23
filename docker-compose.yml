@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-platform-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: ai-platform-auth
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_db
+      JWT_SECRET_KEY: development-only-change-before-production
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  rag-service:
+    build: ./services/rag-service
+    container_name: ai-platform-rag
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/rag_db
+      EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      EMBEDDING_DIMENSION: 384
+      CHUNK_SIZE: 700
+      CHUNK_OVERLAP: 100
+      TOP_K: 5
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ai-service:
+    build: ./services/ai-service
+    container_name: ai-platform-ai
+    environment:
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:8000/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-local-vllm}
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5-1.5b}
+    ports:
+      - "8002:8002"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: ai-platform-gateway
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8001
+      AI_SERVICE_URL: http://ai-service:8002
+      RAG_SERVICE_URL: http://rag-service:8003
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - ai-service
+      - rag-service
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: ai-platform-frontend
+    ports:
+      - "8088:8080"
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

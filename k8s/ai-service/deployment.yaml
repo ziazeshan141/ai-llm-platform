@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ai-service
+  namespace: ai-platform
+  labels:
+    app: ai-service
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: ai-service
+
+  template:
+    metadata:
+      labels:
+        app: ai-service
+
+    spec:
+      containers:
+        - name: ai-service
+          image: ai-platform-ai:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8002
+
+          env:
+            # ConfigMap
+            - name: LLM_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: LLM_MODEL
+
+            - name: LLM_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: LLM_BASE_URL
+
+            # Secret
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-platform-secret
+                  key: LLM_API_KEY
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
