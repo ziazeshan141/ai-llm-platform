@@ -26,5 +26,5 @@ data:
   TOP_K: "5"
 
   # AI Service
-  LLM_MODEL: "qwen2.5-1.5b"
-  LLM_BASE_URL: "http://vllm-service:8000/v1"
+  LLM_MODEL: "llama3.2:3b"
+  LLM_BASE_URL: "http://host.docker.internal:11434/v1"

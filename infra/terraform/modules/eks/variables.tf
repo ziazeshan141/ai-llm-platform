@@ -57,6 +57,11 @@ variable "node_role_arn" {
   type        = string
 }
 
+variable "admin_principal_arn" {
+  description = "IAM principal ARN granted administrator access to the EKS cluster."
+  type        = string
+}
+
 
 # ---------------------------------------------------------
 # CPU Managed Node Group

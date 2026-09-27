@@ -55,7 +55,8 @@ ecr_repository_names = [
 # EKS
 # ---------------------------------------------------------
 
-eks_cluster_name = "ai-llm-platform-dev-eks"
+eks_cluster_name        = "ai-llm-platform-dev-eks"
+eks_admin_principal_arn = "arn:aws:iam::933214687108:user/Admin"
 
 
 # ---------------------------------------------------------

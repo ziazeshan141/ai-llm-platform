@@ -119,6 +119,11 @@ variable "eks_version" {
   default     = "1.35"
 }
 
+variable "eks_admin_principal_arn" {
+  description = "IAM principal ARN granted administrator access to the EKS cluster."
+  type        = string
+}
+
 
 # ---------------------------------------------------------
 # EKS CPU Node Group

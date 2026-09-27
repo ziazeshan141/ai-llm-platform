@@ -71,10 +71,6 @@ module "iam" {
   aws_account_id = data.aws_caller_identity.current.account_id
 
   eks_cluster_name = var.eks_cluster_name
-
-  # External Secrets permissions will be connected later
-  # after the workload identity configuration is added.
-  secrets_manager_secret_arns = []
 }
 
 
@@ -99,6 +95,8 @@ module "eks" {
 
   cluster_role_arn = module.iam.eks_cluster_role_arn
   node_role_arn    = module.iam.eks_node_role_arn
+
+  admin_principal_arn = var.eks_admin_principal_arn
 
   # CPU node group
   cpu_node_instance_types = var.cpu_node_instance_types

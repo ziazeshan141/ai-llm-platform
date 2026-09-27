@@ -127,18 +127,6 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
   }
 }
 
-
-resource "aws_iam_role" "external_secrets" {
-  name = "${var.project_name}-${var.environment}-external-secrets-role"
-
-  assume_role_policy = data.aws_iam_policy_document.external_secrets_assume_role.json
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-external-secrets-role"
-  }
-}
-
-
 # ---------------------------------------------------------
 # External Secrets - Secrets Manager Read Policy
 # ---------------------------------------------------------

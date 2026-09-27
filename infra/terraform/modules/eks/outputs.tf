@@ -33,9 +33,11 @@ output "cluster_version" {
 # ---------------------------------------------------------
 
 output "cluster_certificate_authority_data" {
-  description = "Base64 encoded certificate authority data for the EKS cluster."
-  value       = aws_eks_cluster.this.certificate_authority[0].data
-  sensitive   = true
+  description = "Base64 encoded certificate data required to communicate with the EKS cluster."
+  value = try(
+    aws_eks_cluster.this.certificate_authority[0].data,
+    null
+  )
 }
 
 
@@ -54,8 +56,11 @@ output "cluster_security_group_id" {
 # ---------------------------------------------------------
 
 output "cluster_oidc_issuer_url" {
-  description = "OIDC issuer URL of the EKS cluster."
-  value       = aws_eks_cluster.this.identity[0].oidc[0].issuer
+  description = "OIDC issuer URL for the EKS cluster."
+  value = try(
+    aws_eks_cluster.this.identity[0].oidc[0].issuer,
+    null
+  )
 }
 
 
