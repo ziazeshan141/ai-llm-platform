@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: ai-service
-          image: ai-platform-ai:latest
+          image: ai-platform-ai:rag-v1
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -30,7 +30,10 @@ spec:
               containerPort: 8002
 
           env:
-            # ConfigMap
+            # ==================================================
+            # LLM Configuration - ConfigMap
+            # ==================================================
+
             - name: LLM_MODEL
               valueFrom:
                 configMapKeyRef:
@@ -43,12 +46,41 @@ spec:
                   name: ai-platform-config
                   key: LLM_BASE_URL
 
-            # Secret
+            # ==================================================
+            # RAG Configuration - ConfigMap
+            # ==================================================
+
+            - name: RAG_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: RAG_SERVICE_URL
+
+            - name: RAG_TOP_K
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: RAG_TOP_K
+
+            - name: RAG_MAX_DISTANCE
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-platform-config
+                  key: RAG_MAX_DISTANCE
+
+            # ==================================================
+            # Secrets
+            # ==================================================
+
             - name: LLM_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: ai-platform-secret
                   key: LLM_API_KEY
+
+          # ====================================================
+          # Readiness Probe
+          # ====================================================
 
           readinessProbe:
             httpGet:
@@ -59,6 +91,10 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
 
+          # ====================================================
+          # Liveness Probe
+          # ====================================================
+
           livenessProbe:
             httpGet:
               path: /health
@@ -67,6 +103,10 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 3
+
+          # ====================================================
+          # Resources
+          # ====================================================
 
           resources:
             requests:
