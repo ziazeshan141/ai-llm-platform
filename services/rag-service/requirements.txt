@@ -5,3 +5,4 @@ psycopg[binary]
 pgvector
 sentence-transformers
 pydantic-settings
+prometheus-client

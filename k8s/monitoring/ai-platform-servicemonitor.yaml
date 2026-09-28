@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: ai-platform-services
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  namespaceSelector:
+    matchNames:
+      - ai-platform
+
+  selector:
+    matchLabels:
+      monitoring: prometheus
+
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
